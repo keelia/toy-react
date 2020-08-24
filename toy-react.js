@@ -5,7 +5,12 @@ class ElementWrapper{//实体dom元素：得有root，可以挂载dom children�
     }
 
     setAttribute(name,value){
-        this.root.setAttribute(name,value)
+        if(name.match(/^on([\S\s]+)$/)){//tips: [\s\S]+ 表示匹配所有字符
+            this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/,c=>c.toLowerCase()),value)//支持驼峰表达的事件
+        }else{
+            this.root.setAttribute(name,value)
+        }
+       
     }
     appendChild(component){
         //以下需要改造，因为没有root可以用了，而是用的range([RENDER_TO_DOM](range))
@@ -41,6 +46,7 @@ export class Component{
         this.props = Object.create(null)
         this.children = []
         this._root = null
+        this._range = null
     }
 
     setAttribute(name,value){
@@ -60,8 +66,16 @@ export class Component{
 
     [RENDER_TO_DOM](range){//负责更新组件：需要给它一个参数，创建component之后，做了redner的时候，其实是需要知道具体的位置的，不是只知道element，因为不一定element都插入到最后
         //range api是有关位置的,取一个元素然后把它渲染进range里面
+        //为支持重新绘制，需要对比变化前后，需要先把range存一下
+        this._range = range
         this.render()[RENDER_TO_DOM](range)
     }
+    rerender(range){
+        //把原来range里面的东西全删掉
+        this._range.deleteContents()
+        this[RENDER_TO_DOM](this._range)
+    }
+
 }
 
 export function createElement(elType,attributes,...children) {
@@ -71,7 +85,6 @@ export function createElement(elType,attributes,...children) {
     }else{
         element = new elType
     }
-    console.log(element,attributes,children)
     for (const key in attributes) {
         if (attributes.hasOwnProperty(key)) {
             const property = attributes[key];
