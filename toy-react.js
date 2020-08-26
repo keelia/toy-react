@@ -75,10 +75,21 @@ export class Component{
         this._range = range
         this.render()[RENDER_TO_DOM](range)
     }
-    rerender(range){
+    rerender(){
         //把原来range里面的东西全删掉
-        this._range.deleteContents()
-        this[RENDER_TO_DOM](this._range)
+        //this._range.deleteContents()
+        //Range使用注意：这里删除了一个range里的全部内容，成为了一个全空的range，但是全空的range会被吞进下一个rangel里面，所以目前这个阶段如果从左往右点击格子时候，会出现最右边的格子线不见了的情况
+        //所以rerender的时候保证range是不空的，应该先插入再删除
+        let oldRange = this._range//保存旧的range
+
+        let range = document.createRange()
+        range.setStart(oldRange.startContainer,oldRange.startOffset)//新建的range放在老range的开始位置
+        range.setStart(oldRange.startContainer,oldRange.startOffset)
+        this[RENDER_TO_DOM](range)
+        
+        oldRange.setStart(range.endContainer,range.endOffset)//把老的range放在插入的range之后，然后删掉老的range
+        oldRange.deleteContents()
+        
     }
 
     setState(newState){//模拟react setState：合并新旧state，自动触发rerender
