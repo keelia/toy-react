@@ -8,7 +8,12 @@ class ElementWrapper{//实体dom元素：得有root，可以挂载dom children�
         if(name.match(/^on([\S\s]+)$/)){//tips: [\s\S]+ 表示匹配所有字符
             this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/,c=>c.toLowerCase()),value)//支持驼峰表达的事件
         }else{
-            this.root.setAttribute(name,value)
+            if(name === 'className'){//react把classname直接换成了class
+                this.root.setAttribute('class',value)
+            }else{
+                this.root.setAttribute(name,value)
+            }
+            
         }
        
     }
@@ -77,7 +82,6 @@ export class Component{
     }
 
     setState(newState){//模拟react setState：合并新旧state，自动触发rerender
-        console.log(newState)
         //首先会假设已经有了state方法了，当然有可能是null，因此需要递归的形式去访问每一个的对象和属性：深度拷贝
         if(this.state === null || (typeof this.state !== 'object')){
             this.state = newState
@@ -94,9 +98,7 @@ export class Component{
                 }
             }
         }
-        console.log(this.state,newState)
         merge(this.state,newState)
-        console.log('this state',this.state,newState)
         this.rerender()
     }
 
@@ -120,6 +122,11 @@ export function createElement(elType,attributes,...children) {
             if(typeof child === 'string'){
                 child = new TextWrapper(child)
             }
+
+            if(child === null){//react 可能会传成null，child有些是空的
+                continue
+            }
+
             //children的child有可能还是个数组，需要循环调用insertChildren
             if(typeof child === 'object' && (child instanceof Array)){
                 insertChildren(child)
