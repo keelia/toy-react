@@ -10,8 +10,9 @@ class MyComponent extends Component{
     render(){
         return <div>
             <h1>my component</h1>
-            <button onclick={()=>{this.state.a++;this.rerender()}}>Add</button>
+            <button onclick={()=>{this.setState({a:this.state.a+1})}}>Add</button>
             <span>{this.state.a.toString()}</span>
+            <span>{this.state.b && this.state.b.toString()}</span>
         </div>
     }
 }

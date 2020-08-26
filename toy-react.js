@@ -76,6 +76,30 @@ export class Component{
         this[RENDER_TO_DOM](this._range)
     }
 
+    setState(newState){//模拟react setState：合并新旧state，自动触发rerender
+        console.log(newState)
+        //首先会假设已经有了state方法了，当然有可能是null，因此需要递归的形式去访问每一个的对象和属性：深度拷贝
+        if(this.state === null || (typeof this.state !== 'object')){
+            this.state = newState
+            this.rerender()
+            return
+        }
+        let merge = (oldState,newState)=>{
+            //for 循环所有的子节点，然后去merge
+            for (const p in newState) {
+                if (oldState[p] === null || (typeof oldState[p] !== 'object' )){
+                    oldState[p]= newState[p]
+                }else{
+                    merge(oldState[p],newState[p])
+                }
+            }
+        }
+        console.log(this.state,newState)
+        merge(this.state,newState)
+        console.log('this state',this.state,newState)
+        this.rerender()
+    }
+
 }
 
 export function createElement(elType,attributes,...children) {
